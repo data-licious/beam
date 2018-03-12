@@ -128,6 +128,7 @@ from apache_beam.internal.gcp.json_value import from_json_value
 from apache_beam.internal.gcp.json_value import to_json_value
 from apache_beam.io.gcp.internal.clients import bigquery
 from apache_beam.options.pipeline_options import GoogleCloudOptions
+from apache_beam.options.pipeline_options import WorkerOptions
 from apache_beam.runners.dataflow.native_io import iobase as dataflow_io
 from apache_beam.transforms import DoFn
 from apache_beam.transforms import ParDo
@@ -645,7 +646,12 @@ class BigQueryReader(dataflow_io.NativeSourceReader):
     tr = self.source.table_reference
     if tr is None:
       # TODO: implement location retrieval for query sources
-      return
+      #
+      # Temporarily returning worker's default zone
+      # Avoids errors due to BigQuery default zone=US
+      #
+      worker_default_zone = self.source.pipeline_options.view_as(WorkerOptions).zone
+      return worker_default_zone
 
     if tr.projectId is None:
       source_project_id = self.executing_project
